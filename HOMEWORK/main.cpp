@@ -19,7 +19,7 @@ void PrintObjects(HeaderD* pStruct7); //Objektide kuvamine
 
 int InsertNewObject(HeaderD** pStruct7, char* pNewID, int NewCode); //Uue objekti sisestamine
 
-int vordlus(char, char); //Kahe stringi võrdlemine
+int vordlus(char, char); //Kahe stringi võrdlemine täht-haaval
 
 Object2* RemoveExistingObject(HeaderD** pStruct7, char* pExistingID); //Olemasoleva objekti eemaldamine
 
@@ -29,7 +29,7 @@ Object2* RemoveExistingObject(HeaderD** pStruct7, char* pExistingID); //Olemasol
 int main()
 {
 	//	VIIDAD
-	HeaderD* pStruct7 = GetStruct7(2, 30);
+	HeaderD* pStruct7 = GetStruct7(2, 35);
 
 	HeaderD** ppStruct7;
 
@@ -42,6 +42,7 @@ int main()
 	//char* ID = (char*)malloc(strlen(buf) + 1);
 
 	char* ID = (char*)malloc(100);
+	//char* ID2 = (char*)malloc(100);
 
 	char* removedID = (char*)malloc(100);
 	//char* removedID = new char;
@@ -57,6 +58,7 @@ int main()
 		printf("1. Kuva objektid\n");
 		printf("2. Lisa objekt\n");
 		printf("3. Eemalda objekt\n");
+		//printf("4. Lisa jargmine objekt\n");
 		printf("7. Peata programm\n\n");
 
 		printf("Sisesta valik: ");
@@ -96,6 +98,19 @@ int main()
 				printf("\nEemaldatud objekt: %s\n", removedObj->pID);
 			}
 			break;
+		//case 4: 
+		//	printf("\nSisestage j2rgmise objekti ID: ");
+		//	scanf("%s", ID2);
+
+		//	kontroll = InsertNewObject(ppStruct7, ID2, 696969);
+		//	if (kontroll == 1) //Kui funktsioon tagastab ühe, siis lisame uue objekti loendisse!
+		//	{
+		//		printf("\nUus objekt on struktuuri lisatud!\n");
+		//	}
+		//	else {
+		//		printf("\nEi saanud objekti struktuuri lisada!\n");
+		//	}
+		//	break;
 		case 7:
 			printf("\nPeatasid programmi!");
 			break;
@@ -104,6 +119,7 @@ int main()
 		}
 	}
 	free(ID);
+	//free(ID2);
 	free(removedID);
 
 	return 0;
@@ -199,7 +215,7 @@ int InsertNewObject(HeaderD** pStruct7, char* pNewID, int NewCode) ////Sisendiks
 	HeaderD** ppHeader = pStruct7; //Headerpointer Header pointerile
 	HeaderD* pHeader; //Headeri pointer
 	pHeader = *ppHeader;
-	HeaderD* pHtemp = pHeader; //Uue Headeri pointer = olemasoleva Headeri pointer
+	HeaderD* pHtemp = pHeader; //Abipointer 
 	Object2* ob2 = (Object2*)pHeader->pObject; //pointer ob2-le
 
 	//KONTROLLIN, KAS SAMA ID ON JUBA OLEMAS
@@ -221,60 +237,46 @@ int InsertNewObject(HeaderD** pStruct7, char* pNewID, int NewCode) ////Sisendiks
 	//Object2* ob2New = new Object2;
 
 	int stop = 0;
-	for (int i = 0; stop != 1; pHtemp = pHeader, pHeader = pHeader->pNext, i++)
+	for (int i = 0; stop != 1; pHtemp = pHeader, pHeader = pHeader->pNext, i++)  //tempi kaudu saab kätte eelmise objekti/headeri, i loeb läbitud headereid
 	{
-		//KUI SISESTATUD ID on HEADERITE LOENDIS TÄHE POOLEST VIIMANE / Mingi HEADER PUUDUB
-		if (pHeader == NULL)
-		{
-			HeaderD* pHnew = (HeaderD*)malloc(sizeof(HeaderD)); //uus headerD tüüpi viit
-	
-			pHnew->cBegin = pNewID[0]; //Uue Headeri esimene täht
-			pHnew->pNext = NULL;
-			pHnew->pPrior = NULL;
-			pHnew->pObject = ob2New;
-			ob2New->pNext = NULL;
-			pHtemp->pNext = pHnew;
-			stop = 1;
-			break;
-		}
-
 		int kontroll = vordlus(pHeader->cBegin, pNewID[0]); //Võrdlen Headerite ID ja uue ID esimest tähte
 
-		if (kontroll == 0) //Kui ID esitähed on võrdsed, lisada olemasoleva Headeri alla uus objekt (sorteeritult)
+		 //Kui ID esitähed on võrdsed, on selle tähega header olemas, ehk vaja lisada sorteeritult objekt!
+		if (kontroll == 0)
 		{
 			ob2 = (Object2*)pHeader->pObject;
 			Object2* temp = ob2;
-			int o = 0;
-			int kont = 0;
+			int objekt = 0;
+			int comp = 0;
 			int n = 0;
 			do {
-				kont = 0;
-				for (n = 0; kont == 0; n++) 
+				comp = 0;
+				for (n = 0; comp == 0; n++) //Võrdlemaks olemasoleva ja uue ID teisi tähti (alates teisest tähest)
 				{
-					kont = vordlus(ob2->pID[n + 1], pNewID[n + 1]); //Alates teisest tähest
+					comp = vordlus(ob2->pID[n + 1], pNewID[n + 1]); 
 				}
-				if (kont > 0) //Kui uus objekt peaks tulema esimeseks
+				if (comp > 0) //Kui uus objekt peaks tulema esimeste hulka (nt b-a = 98-97 = 1)
 				{
-					if (o == 0)
+					if (objekt == 0) //Kui esimeseks objektiks
 					{
+						ob2New->pNext = ob2; //uue objekti viit = vana objekt
+						pHeader->pObject = ob2New; //Pea header viitab uuele objektile
+						stop = 1; //Loop peatub
+						break;
+					}
+					if (objekt != 0) //Kui samade tähtedega objekte on veel
+					{
+						temp->pNext = ob2New; //Sisesta uus objekt tempiga viidatud kohale
 						ob2New->pNext = ob2;
-						pHeader->pObject = ob2New;
 						stop = 1;
 						break;
 					}
-					if (o != 0)
-					{
-						temp->pNext = ob2New;
-						ob2New->pNext = ob2;
-						stop = 1;
-						break;
-					}
 				}
-				else { //Kui on väiksem kui 0
-					o++;
-					temp = ob2;
-					ob2 = ob2->pNext;
-					if (ob2 == NULL)
+				else { //Kui uus objekt ei tule esimeseks (nt c-d = 98-99 = -1)
+					objekt++;
+					temp = ob2; //temp liigub kaasa objekti viidaga ning näitab, kuhu uus objekt sisestada tuleb
+					ob2 = ob2->pNext; //liigutame objektiviita edasi
+					if (ob2 == NULL) //kui objekt viitab nullile, lisame uue objekti lõppu!
 					{
 						temp->pNext = ob2New;
 						ob2New->pNext = NULL;
@@ -284,35 +286,54 @@ int InsertNewObject(HeaderD** pStruct7, char* pNewID, int NewCode) ////Sisendiks
 				}
 			} while (stop == 0);
 		}
-		if (kontroll > 0 && i == 0) //Kui uus objekt tuleb kõige esimesele kohale lisada
+
+		//Kui kontroll ei ole null, ei ole sellise tähega headerit ja see tuleb luua!
+		if (kontroll > 0 && i == 0) //Kui uus header tuleb struktuuris kõige esimesele kohale lisada (nt B-A = 66-65 = 1 ja pHeader pole liikunud)
 		{
-			HeaderD* pHnew = (HeaderD*)malloc(sizeof(HeaderD));
+			HeaderD* pHnew = (HeaderD*)malloc(sizeof(HeaderD)); //annan uuele headerile mälu
 			//HeaderD* pHnew = new HeaderD;
-			pHnew->pNext = pHtemp;
-			pHnew->cBegin = pNewID[0];
-			pHnew->pObject = ob2New;
-			ob2New->pNext = NULL;
-			*pStruct7 = pHnew;
+			pHnew->pNext = pHtemp; //Uus header viitab ajutisele headerile
+			pHnew->pPrior = NULL; //Uue headeri eelmine linkur = NULL (pStruct7)
+			pHnew->cBegin = pNewID[0]; //Uue headeri esimene täht = Uue ID esimene täht
+			pHnew->pObject = ob2New; //Uus header viitab uuele objektile
+			ob2New->pNext = NULL; //Alguses järgmist objekti ei ole
+			*pStruct7 = pHnew; //Muutub ka esimene siduja
 
 			stop = 1;
 		}
-		if (kontroll > 0 && i != 0) //
+		if (kontroll > 0 && i != 0) //Kui uus header tuleb lisada struktuuri keskele
 		{
-			HeaderD* pHnew = (HeaderD*)malloc(sizeof(HeaderD));
+			HeaderD* pHnew = (HeaderD*)malloc(sizeof(HeaderD)); //annan uuele headerile mälu
 			//HeaderD* pHnew = new HeaderD;
-			pHtemp->pNext = pHnew;
-			pHnew->pNext = pHeader;
-			pHnew->cBegin = pNewID[0];
-			pHnew->pObject = ob2New;
+			pHtemp->pNext = pHnew; //Eelmine header viitab uuele
+			pHnew->pNext = pHeader; //Uus header viitab järgmisele
+			pHnew->pPrior = pHtemp; //Uus header on lingitud eelmisega
+			pHnew->cBegin = pNewID[0]; //Uue headeri esimene täht on sisestatud ID esimene täht
+			pHnew->pObject = ob2New; //Uus header viitab 
 			ob2New->pNext = NULL;
 
 			stop = 1;
+		}
+		//KUI SISESTATUD ID-GA OBJEKT PUUDUB (viimaseks)
+		if (pHeader == NULL)
+		{
+			HeaderD* pHnew = (HeaderD*)malloc(sizeof(HeaderD)); //uus headerD tüüpi viit
+
+			pHnew->cBegin = pNewID[0]; //Uue Headeri esimene täht
+			pHnew->pNext = NULL;
+			pHnew->pPrior = pHtemp;
+			pHnew->pObject = ob2New;
+			ob2New->pNext = NULL;
+			pHtemp->pNext = pHnew;
+			stop = 1;
+			break;
 		}
 	}
 
 	ob2New->pID = pNewID; //Uue objekti ID = uus ID
 	ob2New->Code = NewCode; //Uue objekti kood = uus kood
 
+	//Aja funktsiooni teisendus
 	time_t RawTime;
 	time(&RawTime);
 
@@ -359,77 +380,80 @@ Object2* RemoveExistingObject(HeaderD** pStruct7, char* pExistingID) {
 	HeaderD** ppHeader = pStruct7;
 	HeaderD* pHeader = *ppHeader;
 	HeaderD* pHtemp = pHeader;
-	Object2* pObj2;
+	Object2* pObj2; //Abiviit objektidele
 
-	int o = 0, stop = 0, h = 0;
+	int objekt = 0, stop = 0, header = 0, kontroll;
 
-	for (;; pHeader = pHeader->pNext, o = 0, h++)
+	for (;; pHeader = pHeader->pNext, objekt = 0, header++) //Kammin läbi headerid, loetlen läbitud headereid
 	{
-		if (pHeader == NULL)
+		if (pHeader == NULL) //Kontrollin, kas sellise ID-ga header on olemas
 		{
 			printf("\nSellise ID-ga objekti ei eksisteeri!\n");
 			return 0;
 		}
-		pObj2 = (Object2*)pHeader->pObject;
-		Object2* temp = pObj2;
-		int kontroll;
-		for (; pObj2 != NULL; pObj2 = pObj2->pNext, o++)
+		pObj2 = (Object2*)pHeader->pObject; //Omistan pObj2-le vastavad pHeaderi objekti viida
+		Object2* temp = pObj2; //Ajutine object 2 tyypi viit temp = pObj2
+
+		for (; pObj2 != NULL; pObj2 = pObj2->pNext, objekt++) //Kammin läbi objektid, loetlen läbitud objekte
 		{
-			kontroll = strcmp(pExistingID, pObj2->pID);
-			if (kontroll == 0)
+			kontroll = strcmp(pExistingID, pObj2->pID); //Võrdlen sisestatud ja olemasolevaid ID-sid
+			if (kontroll == 0) //strcmp väljastab võrdsete stringide korral nulli!
 			{
-				break;
+				break;     //Kui sobiv leitud, peata loop
 			}
-			temp = pObj2;
+			temp = pObj2;  //Abiviit viitab objektile, kus loop peatus
 		}
 		if (kontroll == 0)
 		{
-			if (o != 0 && pObj2->pNext == NULL)
+			if (objekt != 0 && pObj2->pNext == NULL) //Kui objekt on oma headeri loendis viimane
 			{
-				temp->pNext = NULL;
-				removedObj = pObj2;
+				temp->pNext = NULL; 
+				removedObj = pObj2; 
 				return removedObj;
 			}
-			if (o != 0 && pObj2->pNext)
+			if (objekt != 0 && pObj2->pNext) //Kui objekt ei ole esimene, aga järgmine on olemas
 			{
 				temp->pNext = pObj2->pNext;
 				pObj2->pNext = NULL;
 				removedObj = pObj2;
 				return removedObj;
 			}
-			if (o == 0 && pObj2->pNext == NULL && pHeader->pNext == NULL) 
+			if (objekt == 0 && pObj2->pNext == NULL && pHeader->pNext == NULL) //Kui tegemist on viimase headeri ainukese objektiga
 			{
 				pHtemp->pNext = NULL;
 				removedObj = pObj2;
 				pHeader->pObject = NULL;
-				free(pHeader);
+				free(pHeader); //Vabastame ka vastava headeri siduja
 				return removedObj;
 			}
-			if (o == 0 && pObj2->pNext)
+			if (objekt == 0 && pObj2->pNext) //Kui objekt on esimene ja järgmine on olemas
 			{
-				pHeader->pObject = pObj2->pNext;
+				pHeader->pObject = pObj2->pNext; //Suunan headeri viida järgmisele objektile loendis
 				pObj2->pNext = removedObj = pObj2;
 				return removedObj;
 			}
-			if (o == 0 && pObj2->pNext == NULL && h == 0)
+			if (objekt == 0 && pObj2->pNext == NULL && header == 0) //Kui tegemist on esimese headeri ainukese objektiga
 			{
-				*pStruct7 = pHeader->pNext;
+				*pStruct7 = pHeader->pNext; //Muudan esimese siduja viida järgmisele
 				removedObj = pObj2;
 				pHeader->pObject = NULL;
 				pHeader->pNext = NULL;
-				free(pHeader);
+				pHeader->pPrior = NULL;
+				free(pHeader); //Vabastan vastava headeri siduja
 				return removedObj;
 			}
-			if (o == 0 && pObj2->pNext == NULL && h != 0)
+			if (objekt == 0 && pObj2->pNext == NULL && header != 0) //Kui tegemist on ainukese objektiga headerite struktuuri keskel
 			{
 				pHtemp->pNext = pHeader->pNext;
+				pHeader->pNext->pPrior = pHtemp;
 				pHeader->pObject = NULL;
 				pHeader->pNext = NULL;
-				free(pHeader);
+				pHeader->pPrior = NULL;
+				free(pHeader); //Vabastan vastava headeri siduja
 				removedObj = pObj2;
 				return removedObj;
 			}
 		}
-		pHtemp = pHeader;
+		pHtemp = pHeader; //tempi kaudu saab ligi eelmisele headerile
 	}
 }
