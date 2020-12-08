@@ -23,13 +23,43 @@ int vordlus(char, char); //Kahe stringi võrdlemine täht-haaval
 
 Object2* RemoveExistingObject(HeaderD** pStruct7, char* pExistingID); //Olemasoleva objekti eemaldamine
 
+//===================BINARY TREE FUNCTIONS===============
+Node* CreateBinaryTree(HeaderD* pStruct7); //Mitterekursiivne funktsioon, mis loob kahendpuu
+
+void TreeTraversal(Node* pTree);
+
+Node* DeleteTreeNode(Node* pTree, unsigned long int Code);
+
+Stack* push(Stack* pStack, void* pOb);
+
+Stack* pop(Stack* pStack, void** pResult);
+
+void printTree(Node* pTree, int space);
+
+
+//typedef struct node
+//{
+//	void* pObject;		// Pointer to object belonging to this node
+//						// Objects may be of types Object1, ....Object10.
+//						// Declarations of objects are in file Objects.h
+//	struct node* pLeft, // Pointer to the left child node
+//		* pRight;		// Pointer to the right child node
+//} Node;
+//
+//typedef struct stack
+//{
+//	void* pObject;
+//	struct stack* pNext;
+//} Stack;
+
+
 //=======================================================
 //MAIN FUNKTSIOON
 //=======================================================
 int main()
 {
 	//	VIIDAD
-	HeaderD* pStruct7 = GetStruct7(2, 35);
+	HeaderD* pStruct7 = GetStruct7(2, 10);
 
 	HeaderD** ppStruct7;
 
@@ -37,19 +67,17 @@ int main()
 
 	Object2* removedObj;
 
-	//char buf[100];
-
-	//char* ID = (char*)malloc(strlen(buf) + 1);
+	Node* pTree = (Node*)malloc(sizeof(Node) * 10);
 
 	char* ID = (char*)malloc(100);
-	//char* ID2 = (char*)malloc(100);
 
 	char* removedID = (char*)malloc(100);
-	//char* removedID = new char;
 
 	int valik, kontroll;
 
-	//int kood;
+	unsigned long int removedCode;
+
+	int test = 0;
 
 	//MENÜÜ
 	while (1)
@@ -58,7 +86,9 @@ int main()
 		printf("1. Kuva objektid\n");
 		printf("2. Lisa objekt\n");
 		printf("3. Eemalda objekt\n");
-		//printf("4. Lisa jargmine objekt\n");
+		printf("4. Loo kahendpuu\n");
+		printf("5. K2i l2bi kahendpuu\n");
+		printf("6. Kustuta objekt kahendpuust\n");
 		printf("7. Peata programm\n\n");
 
 		printf("Sisesta valik: ");
@@ -98,29 +128,48 @@ int main()
 				printf("\nEemaldatud objekt: %s\n", removedObj->pID);
 			}
 			break;
-		//case 4: 
-		//	printf("\nSisestage j2rgmise objekti ID: ");
-		//	scanf("%s", ID2);
+		case 4: 
+			pTree = CreateBinaryTree(pStruct7);
+			printf("\nKahendpuu loodud!\n");
 
-		//	kontroll = InsertNewObject(ppStruct7, ID2, 696969);
-		//	if (kontroll == 1) //Kui funktsioon tagastab ühe, siis lisame uue objekti loendisse!
-		//	{
-		//		printf("\nUus objekt on struktuuri lisatud!\n");
-		//	}
-		//	else {
-		//		printf("\nEi saanud objekti struktuuri lisada!\n");
-		//	}
-		//	break;
+			test = 1;
+			break;
+		case 5: 
+			if (test != 1) {
+				printf("\nLoo enne kahendpuu!\n");
+			}
+			else {
+				printf("\nKahendpuu:\n");
+				TreeTraversal(pTree);
+
+				printTree(pTree, 0);
+
+			}
+			break;
+		case 6: 
+			if (test != 1) {
+				printf("\nLoo enne kahendpuu!\n");
+			}
+			else {
+				printf("\nSisesta objekti kood, mille soovid eemaldada: ");
+				scanf("%lu", &removedCode);
+				pTree = DeleteTreeNode(pTree, removedCode);
+				if (pTree) {
+					printf("\nEemaldatud objekt: %d\n", removedCode);
+				}
+			}
+			break;
 		case 7:
-			printf("\nPeatasid programmi!");
+			printf("\nPeatasid programmi!\n");
 			break;
 		default:
 			printf("\nSellist valikut ei ole!\n");
 		}
 	}
 	free(ID);
-	//free(ID2);
 	free(removedID);
+	free(pTree);
+	//free(newTree);
 
 	return 0;
 }
@@ -239,10 +288,10 @@ int InsertNewObject(HeaderD** pStruct7, char* pNewID, int NewCode) ////Sisendiks
 	int stop = 0;
 	for (int i = 0; stop != 1; pHtemp = pHeader, pHeader = pHeader->pNext, i++)  //tempi kaudu saab kätte eelmise objekti/headeri, i loeb läbitud headereid
 	{
-		int kontroll = vordlus(pHeader->cBegin, pNewID[0]); //Võrdlen Headerite ID ja uue ID esimest tähte
+		int kasVordsed = vordlus(pHeader->cBegin, pNewID[0]); //Võrdlen Headerite ID ja uue ID esimest tähte
 
 		 //Kui ID esitähed on võrdsed, on selle tähega header olemas, ehk vaja lisada sorteeritult objekt!
-		if (kontroll == 0)
+		if (kasVordsed == 0) //On võrdsed
 		{
 			ob2 = (Object2*)pHeader->pObject;
 			Object2* temp = ob2;
@@ -288,7 +337,7 @@ int InsertNewObject(HeaderD** pStruct7, char* pNewID, int NewCode) ////Sisendiks
 		}
 
 		//Kui kontroll ei ole null, ei ole sellise tähega headerit ja see tuleb luua!
-		if (kontroll > 0 && i == 0) //Kui uus header tuleb struktuuris kõige esimesele kohale lisada (nt B-A = 66-65 = 1 ja pHeader pole liikunud)
+		if (kasVordsed > 0 && i == 0) //Kui uus header tuleb struktuuris kõige esimesele kohale lisada (nt B-A = 66-65 = 1 ja pHeader pole liikunud)
 		{
 			HeaderD* pHnew = (HeaderD*)malloc(sizeof(HeaderD)); //annan uuele headerile mälu
 			//HeaderD* pHnew = new HeaderD;
@@ -301,7 +350,7 @@ int InsertNewObject(HeaderD** pStruct7, char* pNewID, int NewCode) ////Sisendiks
 
 			stop = 1;
 		}
-		if (kontroll > 0 && i != 0) //Kui uus header tuleb lisada struktuuri keskele
+		if (kasVordsed > 0 && i != 0) //Kui uus header tuleb lisada struktuuri keskele
 		{
 			HeaderD* pHnew = (HeaderD*)malloc(sizeof(HeaderD)); //annan uuele headerile mälu
 			//HeaderD* pHnew = new HeaderD;
@@ -380,9 +429,9 @@ Object2* RemoveExistingObject(HeaderD** pStruct7, char* pExistingID) {
 	HeaderD** ppHeader = pStruct7;
 	HeaderD* pHeader = *ppHeader;
 	HeaderD* pHtemp = pHeader;
-	Object2* pObj2; //Abiviit objektidele
+	Object2* ob2; //Abiviit objektidele
 
-	int objekt = 0, stop = 0, header = 0, kontroll;
+	int objekt = 0, stop = 0, header = 0, kasVordsed;
 
 	for (;; pHeader = pHeader->pNext, objekt = 0, header++) //Kammin läbi headerid, loetlen läbitud headereid
 	{
@@ -391,58 +440,58 @@ Object2* RemoveExistingObject(HeaderD** pStruct7, char* pExistingID) {
 			printf("\nSellise ID-ga objekti ei eksisteeri!\n");
 			return 0;
 		}
-		pObj2 = (Object2*)pHeader->pObject; //Omistan pObj2-le vastavad pHeaderi objekti viida
-		Object2* temp = pObj2; //Ajutine object 2 tyypi viit temp = pObj2
+		ob2 = (Object2*)pHeader->pObject; //Omistan pObj2-le vastavad pHeaderi objekti viida
+		Object2* temp = ob2; //Ajutine object 2 tyypi viit temp = pObj2
 
-		for (; pObj2 != NULL; pObj2 = pObj2->pNext, objekt++) //Kammin läbi objektid, loetlen läbitud objekte
+		for (; ob2 != NULL; ob2 = ob2->pNext, objekt++) //Kammin läbi objektid, loetlen läbitud objekte
 		{
-			kontroll = strcmp(pExistingID, pObj2->pID); //Võrdlen sisestatud ja olemasolevaid ID-sid
-			if (kontroll == 0) //strcmp väljastab võrdsete stringide korral nulli!
+			kasVordsed = strcmp(pExistingID, ob2->pID); //Võrdlen sisestatud ja olemasolevaid ID-sid
+			if (kasVordsed == 0) //strcmp väljastab võrdsete stringide korral nulli!
 			{
 				break;     //Kui sobiv leitud, peata loop
 			}
-			temp = pObj2;  //Abiviit viitab objektile, kus loop peatus
+			temp = ob2;  //Abiviit viitab objektile, kus loop peatus
 		}
-		if (kontroll == 0)
+		if (kasVordsed == 0)
 		{
-			if (objekt != 0 && pObj2->pNext == NULL) //Kui objekt on oma headeri loendis viimane
+			if (objekt != 0 && ob2->pNext == NULL) //Kui objekt on oma headeri loendis viimane
 			{
 				temp->pNext = NULL; 
-				removedObj = pObj2; 
+				removedObj = ob2;
 				return removedObj;
 			}
-			if (objekt != 0 && pObj2->pNext) //Kui objekt ei ole esimene, aga järgmine on olemas
+			if (objekt != 0 && ob2->pNext) //Kui objekt ei ole esimene, aga järgmine on olemas
 			{
-				temp->pNext = pObj2->pNext;
-				pObj2->pNext = NULL;
-				removedObj = pObj2;
+				temp->pNext = ob2->pNext;
+				ob2->pNext = NULL;
+				removedObj = ob2;
 				return removedObj;
 			}
-			if (objekt == 0 && pObj2->pNext == NULL && pHeader->pNext == NULL) //Kui tegemist on viimase headeri ainukese objektiga
+			if (objekt == 0 && ob2->pNext == NULL && pHeader->pNext == NULL) //Kui tegemist on viimase headeri ainukese objektiga
 			{
 				pHtemp->pNext = NULL;
-				removedObj = pObj2;
+				removedObj = ob2;
 				pHeader->pObject = NULL;
 				free(pHeader); //Vabastame ka vastava headeri siduja
 				return removedObj;
 			}
-			if (objekt == 0 && pObj2->pNext) //Kui objekt on esimene ja järgmine on olemas
+			if (objekt == 0 && ob2->pNext) //Kui objekt on esimene ja järgmine on olemas
 			{
-				pHeader->pObject = pObj2->pNext; //Suunan headeri viida järgmisele objektile loendis
-				pObj2->pNext = removedObj = pObj2;
+				pHeader->pObject = ob2->pNext; //Suunan headeri viida järgmisele objektile loendis
+				ob2->pNext = removedObj = ob2;
 				return removedObj;
 			}
-			if (objekt == 0 && pObj2->pNext == NULL && header == 0) //Kui tegemist on esimese headeri ainukese objektiga
+			if (objekt == 0 && ob2->pNext == NULL && header == 0) //Kui tegemist on esimese headeri ainukese objektiga
 			{
 				*pStruct7 = pHeader->pNext; //Muudan esimese siduja viida järgmisele
-				removedObj = pObj2;
+				removedObj = ob2;
 				pHeader->pObject = NULL;
 				pHeader->pNext = NULL;
 				pHeader->pPrior = NULL;
 				free(pHeader); //Vabastan vastava headeri siduja
 				return removedObj;
 			}
-			if (objekt == 0 && pObj2->pNext == NULL && header != 0) //Kui tegemist on ainukese objektiga headerite struktuuri keskel
+			if (objekt == 0 && ob2->pNext == NULL && header != 0) //Kui tegemist on ainukese objektiga headerite struktuuri keskel
 			{
 				pHtemp->pNext = pHeader->pNext;
 				pHeader->pNext->pPrior = pHtemp;
@@ -450,10 +499,316 @@ Object2* RemoveExistingObject(HeaderD** pStruct7, char* pExistingID) {
 				pHeader->pNext = NULL;
 				pHeader->pPrior = NULL;
 				free(pHeader); //Vabastan vastava headeri siduja
-				removedObj = pObj2;
+				removedObj = ob2;
 				return removedObj;
 			}
 		}
 		pHtemp = pHeader; //tempi kaudu saab ligi eelmisele headerile
 	}
 }
+
+//typedef struct node
+//{
+//	void* pObject;		// Pointer to object belonging to this node
+//						// Objects may be of types Object1, ....Object10.
+//						// Declarations of objects are in file Objects.h
+//	struct node* pLeft, // Pointer to the left child node
+//		* pRight;		// Pointer to the right child node
+//} Node;
+//
+//typedef struct stack
+//{
+//	void* pObject;
+//	struct stack* pNext;
+//} Stack;
+
+//Node* getnode(int *x)
+//{
+//	Node* p = (Node*)malloc(sizeof(Node));
+//	p->pObject = x;
+//	p->pLeft = NULL;
+//	p->pRight = NULL;
+//	return p;
+//}
+
+//=======================================================
+//KAHENDOTSINGPUU LOOMISE FUNKTSIOON
+//=======================================================
+Node* CreateBinaryTree(HeaderD* pStruct7) {
+
+	HeaderD* pHeader = pStruct7; //HeaderD tüüpi pointer esimesele sidujale
+	Object2* pObj; //Objekt2 tüüpi pointer
+	int stop, n = 0; //arvud loetlemiseks
+	Object2* pNodeObj; //Objekt2 tüüpi pointer	
+	Node* pNode; //Node tüüpi pointer
+	Node* pRoot = (Node*)malloc(sizeof(Node)); //Eraldan puu tipule mälu
+	pRoot->pObject = pHeader->pObject;
+	pRoot->pLeft = 0;
+	pRoot->pRight = 0;
+	for (; pHeader != NULL; pHeader = pHeader->pNext) {
+		if (n == 0) {
+			pObj = (Object2*)pHeader->pObject;
+			pObj = pObj->pNext;
+			if (pObj == NULL) {
+				pHeader = pHeader->pNext;
+				pObj = (Object2*)pHeader->pObject;
+			}
+		}
+		pObj = (Object2*)pHeader->pObject;
+		for (; pObj != NULL; pObj = pObj->pNext) {
+			stop = 0;
+			pNode = pRoot;
+			for (; stop != 1;) {
+				pNodeObj = (Object2*)pNode->pObject;
+				if (pNodeObj->Code > pObj->Code) {
+					if (!pNode->pLeft) {
+						pNode->pLeft = (Node*)malloc(sizeof(Node));
+						pNode = pNode->pLeft;
+						pNode->pLeft = 0;
+						pNode->pRight = 0;
+						pNode->pObject = pObj;
+						stop = 1;
+						n++;
+					}
+					else {
+						pNode = pNode->pLeft;
+					}
+				}
+				else {
+					if (!pNode->pRight) {
+						pNode->pRight = (Node*)malloc(sizeof(Node));
+						pNode = pNode->pRight;
+						pNode->pLeft = 0;
+						pNode->pRight = 0;
+						pNode->pObject = pObj;
+						stop = 1;
+						n++;
+					}
+					else {
+						pNode = pNode->pRight;
+					}
+				}
+
+			}
+		}
+	}
+	return pRoot; //Väljastab pointeri puu tipule
+}
+
+Stack* push(Stack* pStack, void* pOb) {
+
+	Stack* pNew = (Stack*)malloc(sizeof(Stack));
+	pNew->pObject = pOb;
+	pNew->pNext = pStack;
+	return pNew;
+}
+
+Stack* pop(Stack* pStack, void** pResult) {
+
+	Stack* p;
+	*pResult = pStack->pObject;
+	p = pStack->pNext;
+	free(pStack);
+	return p;
+}
+
+void TreeTraversal(Node* pTree) {
+	Stack* pStack = 0;
+	Node* p1 = pTree, * p2;
+	Object2* pOb;
+	int count = 0;
+	pOb = (Object2*)p1->pObject;
+	printf("\nPuu tipu kood: %lu\n", pOb->Code);
+	printf("\n");
+	printf("Objekti kood    Objekti ID\n");
+	printf("===============================\n");
+	do {
+		while (p1)
+		{
+			pStack = push(pStack, p1);
+			p1 = p1->pLeft;
+			
+		}
+		pStack = pop(pStack, (void**)&p2);
+		pOb = (Object2*)p2->pObject;
+		count++;
+		printf("%d) %lu        %s \n",count, pOb->Code, pOb->pID);
+		p1 = p2->pRight;
+
+	} while (!(!pStack && !p1));
+
+}
+
+void printTree(Node* pTree, int space) {
+	if (pTree == NULL)
+		return;
+	space += 10;
+	printTree(pTree->pRight, space);
+	for (int i = 10; i < space; i++)
+		printf("\t");
+	printf("%d\n", (int)pTree);
+	//cout << root->data << "\n";
+	printTree(pTree->pLeft, space);
+}
+
+Node* DeleteTreeNode(Node* pTree, unsigned long int Code) {
+	Node* pNewTree, * pNode, * NodeBuf = 0;
+	Object2* pOb;
+	pNode = pTree;
+	int LastMoveRight;
+	for (;;) {
+		pOb = (Object2*)pNode->pObject;
+		if (pOb->Code == Code)
+		{
+			if (NodeBuf == NULL)
+			{
+				NodeBuf = pNode;
+				pNode = pNode->pRight;
+				while (pNode->pLeft != 0)
+				{
+					pNode = pNode->pLeft;
+				}
+				pNode->pLeft = NodeBuf->pLeft;
+				pNewTree = NodeBuf->pRight;
+				return pNewTree;
+			}
+			if (pNode->pLeft != 0 && pNode->pRight != 0 && NodeBuf)
+			{
+				if (LastMoveRight == 1)
+				{
+					NodeBuf->pRight = pNode->pRight;
+					NodeBuf = pNode;
+					pNode = pNode->pRight;
+					while (pNode->pLeft != 0)
+					{
+						pNode = pNode->pLeft;
+					}
+					pNode->pLeft = NodeBuf->pLeft;
+					return pTree;
+				}
+				if (LastMoveRight == 0)
+				{
+					NodeBuf->pLeft = pNode->pRight;
+					NodeBuf = pNode;
+					pNode = pNode->pRight;
+					while (pNode->pLeft != 0)
+					{
+						pNode = pNode->pLeft;
+					}
+					pNode->pLeft = NodeBuf->pLeft;
+					return pTree;
+				}
+			}
+			if (pNode->pLeft == 0 && pNode->pRight == 0 && LastMoveRight == 1)
+			{
+				NodeBuf->pRight = 0;
+				return pTree;
+			}
+			if (pNode->pLeft == 0 && pNode->pRight == 0 && LastMoveRight == 0)
+			{
+				NodeBuf->pLeft = 0;
+				return pTree;
+			}
+			if (pNode->pLeft == 0 && LastMoveRight == 0)
+			{
+				NodeBuf->pLeft = pNode->pRight;
+				return pTree;
+			}
+			if (pNode->pLeft == 0 && LastMoveRight == 1)
+			{
+				NodeBuf->pRight = pNode->pRight;
+				return pTree;
+			}
+			if (pNode->pRight == 0 && LastMoveRight == 1)
+			{
+				NodeBuf->pRight = pNode->pLeft;
+				return pTree;
+			}
+			if (pNode->pRight == 0 && LastMoveRight == 0)
+			{
+				NodeBuf->pLeft = pNode->pLeft;
+				return pTree;
+			}
+
+		}
+		if (pNode->pLeft == NULL && pNode->pRight == NULL && pOb->Code != Code)
+		{
+			printf("Sellise koodiga tippu ei ole puus, eemaldamist ei toimunud\n");
+			return 0;
+		}
+		if ((pNode->pLeft == NULL && pOb->Code > Code) || (pNode->pRight == NULL && pOb->Code < Code))
+		{
+			printf("Sellise koodiga tippu ei ole puus, eemaldamist ei toimunud\n");
+			return 0;
+		}
+		if (pOb->Code > Code)
+		{
+			NodeBuf = pNode;
+			pNode = pNode->pLeft;
+			LastMoveRight = 0;
+		}
+		if (pOb->Code < Code)
+		{
+			NodeBuf = pNode;
+			pNode = pNode->pRight;
+			LastMoveRight = 1;
+		}
+	}
+
+}
+
+
+//Node* CreateBinaryTree(HeaderD* pStruct7){ //pStruct7 = root
+//	
+//	Object2* ob2 = (Object2*)pStruct7->pObject;
+//
+//	Node* pNew = (Node*)malloc(sizeof(Node)); //Uus tipp
+//
+//	pNew->pObject = ob2;
+//	pNew->pLeft = NULL;
+//	pNew->pRight = NULL;
+//
+//	if (!pStruct7)
+//		return pNew;
+//
+//	Node* p = pStruct7;
+//
+//	HeaderD* pHeader; //HeaderD tüüpi viit, saab sisendsee iks pStruct7
+//
+//	Object2* ob2 = (Object2*)pStruct7->pObject; //Objekt2 tüüpi viit ob2
+//
+//	Time1* time1 = ob2->pTime1; //Time1 tüüpi viit time1
+//
+//	Node* temp, * par;
+//	
+//	Node* pNew = pStruct7;
+//
+//	p->pObject = ob2;
+//	
+//	p->pLeft = NULL;
+//	p->pRight = NULL;
+//
+//	//p=root;
+//	par = NULL;
+//	
+//
+//	int i = 1;
+//
+//	//Kammib lõpuni läbi pStructi Headerid
+//	for (pHeader = pStruct7; pHeader != NULL; pHeader = pHeader->pNext) {
+//		//Kammib läbi kõik struktuuris olevad objektide loendid
+//		for (ob2 = (Object2*)pHeader->pObject; ob2 != NULL; ob2 = ob2->pNext, i++) {
+//			par = p;
+//			if(ob2->Code < pHeader->pObject->Code)
+//		}
+//	}
+//} // CreateBinaryTree lõpp
+////
+//void TreeTraversal(Node* pTree){
+//	if (pTree == NULL)
+//	{
+//		return;
+//	}
+//}
+//
+//Node* DeleteTreeNode(Node* pTree, unsigned long int Code){}
