@@ -34,7 +34,7 @@ Stack* push(Stack* pStack, void* pOb);
 
 Stack* pop(Stack* pStack, void** pResult);
 
-void printTree(Node* pTree, int space);
+//void printTree(Node* pTree, int space);
 
 
 //typedef struct node
@@ -141,9 +141,7 @@ int main()
 			else {
 				printf("\nKahendpuu:\n");
 				TreeTraversal(pTree);
-
-				printTree(pTree, 0);
-
+				//printTree(pTree, 0);
 			}
 			break;
 		case 6: 
@@ -534,7 +532,7 @@ Object2* RemoveExistingObject(HeaderD** pStruct7, char* pExistingID) {
 //=======================================================
 //KAHENDOTSINGPUU LOOMISE FUNKTSIOON
 //=======================================================
-Node* CreateBinaryTree(HeaderD* pStruct7) {
+Node* CreateBinaryTree(HeaderD* pStruct7) { //Sisendiks HeaderD tüüpi viit esimesele sidujale
 
 	HeaderD* pHeader = pStruct7; //HeaderD tüüpi pointer esimesele sidujale
 	Object2* pObj; //Objekt2 tüüpi pointer
@@ -542,11 +540,11 @@ Node* CreateBinaryTree(HeaderD* pStruct7) {
 	Object2* pNodeObj; //Objekt2 tüüpi pointer	
 	Node* pNode; //Node tüüpi pointer
 	Node* pRoot = (Node*)malloc(sizeof(Node)); //Eraldan puu tipule mälu
-	pRoot->pObject = pHeader->pObject;
-	pRoot->pLeft = 0;
-	pRoot->pRight = 0;
-	for (; pHeader != NULL; pHeader = pHeader->pNext) {
-		if (n == 0) {
+	pRoot->pObject = pHeader->pObject; //Panen juure objekti võrduma Headeri objektiga
+	pRoot->pLeft = 0; //Väärtustan juure vasaku tütre nulliga
+	pRoot->pRight = 0; //Väärtustan juure parema tütre nulliga
+	for (; pHeader != NULL; pHeader = pHeader->pNext) { //Käin läbi lähtestruktuuri headerid
+		if (n == 0) { //Tekitan juurtipu objekti esimesel headeril, millel on objekt olemas
 			pObj = (Object2*)pHeader->pObject;
 			pObj = pObj->pNext;
 			if (pObj == NULL) {
@@ -555,260 +553,220 @@ Node* CreateBinaryTree(HeaderD* pStruct7) {
 			}
 		}
 		pObj = (Object2*)pHeader->pObject;
-		for (; pObj != NULL; pObj = pObj->pNext) {
+		for (; pObj != NULL; pObj = pObj->pNext) { //käin läbi igale headerile kuuluvad objektid
 			stop = 0;
-			pNode = pRoot;
-			for (; stop != 1;) {
-				pNodeObj = (Object2*)pNode->pObject;
-				if (pNodeObj->Code > pObj->Code) {
-					if (!pNode->pLeft) {
-						pNode->pLeft = (Node*)malloc(sizeof(Node));
-						pNode = pNode->pLeft;
-						pNode->pLeft = 0;
-						pNode->pRight = 0;
-						pNode->pObject = pObj;
+			pNode = pRoot; //Node algväärtus on juur
+			for (; stop != 1;) { //Loop kuni Node on loodud
+				pNodeObj = (Object2*)pNode->pObject; //Node'i objekti pointer
+				if (pNodeObj->Code > pObj->Code) { //Kui uue tipu kood on väiksem kui tipp, lisa uus vasakule
+					if (!pNode->pLeft) { //Kui vasakut ei eksisteeri, siis loo 
+						pNode->pLeft = (Node*)malloc(sizeof(Node)); //Loo vasakule tütrele mälu
+						pNode = pNode->pLeft; //Liiguta pointer vasakule tütrele
+						pNode->pLeft = 0; //Uue objekti vasak tütar nulliks
+						pNode->pRight = 0; //Uue objekti parem tütar nulliks
+						pNode->pObject = pObj; //Uus objekt viitab vastavale kirjele 
 						stop = 1;
-						n++;
+						n++; 
 					}
-					else {
+					else { //Kui eksisteerib, liigu veel vasakule ja lisa sinna ning peata alusta uue tsükliga
 						pNode = pNode->pLeft;
 					}
 				}
-				else {
-					if (!pNode->pRight) {
-						pNode->pRight = (Node*)malloc(sizeof(Node));
-						pNode = pNode->pRight;
-						pNode->pLeft = 0;
-						pNode->pRight = 0;
-						pNode->pObject = pObj;
+				else { //Kui uus on suurem, siis lisa paremale
+					if (!pNode->pRight) { //Kui ei eksisteeri, siis loo
+						pNode->pRight = (Node*)malloc(sizeof(Node)); //Tekita mälu	
+						pNode = pNode->pRight; //Liiguta pointer paremale tütrele
+						pNode->pLeft = 0; //Uue objekti vasak tütar nulliks
+						pNode->pRight = 0; //Uue objekti parem tütar nulliks
+						pNode->pObject = pObj; //Uus objekt viitab vastavale kirjele
 						stop = 1;
 						n++;
 					}
-					else {
+					else { //Kui eksisteerib, siis liigu veel paremale
 						pNode = pNode->pRight;
 					}
 				}
-
 			}
 		}
 	}
-	return pRoot; //Väljastab pointeri puu tipule
+	return pRoot; //Väljastab pointeri tekkinud kahendpuu tipule
 }
 
+//=======================================================
+//Stacki lisamise FUNKTSIOON
+//=======================================================
 Stack* push(Stack* pStack, void* pOb) {
 
-	Stack* pNew = (Stack*)malloc(sizeof(Stack));
-	pNew->pObject = pOb;
+	Stack* pNew = (Stack*)malloc(sizeof(Stack)); //Annan mälu stacki elementidele
+	pNew->pObject = pOb; //Uue elemendi objekt = argumendist saadud objekt
 	pNew->pNext = pStack;
-	return pNew;
+	return pNew; //Väljastan uue peamise elemendi
 }
-
+//=======================================================
+//Stackist eemaldamise FUNKTSIOON
+//=======================================================
 Stack* pop(Stack* pStack, void** pResult) {
 
-	Stack* p;
-	*pResult = pStack->pObject;
-	p = pStack->pNext;
-	free(pStack);
-	return p;
+	Stack* p; //Pointer pealmisele elemendile
+	*pResult = pStack->pObject; //Pealmise elemendi kirje
+	p = pStack->pNext; //Liigutan pointeri pealmisest järgmisele elemendile
+	free(pStack); //Vabastan pealmise elemendi
+	return p; //Väljastan pointeri uuele stackile
 }
-
-void TreeTraversal(Node* pTree) {
-	Stack* pStack = 0;
-	Node* p1 = pTree, * p2;
+//=======================================================
+//KAHENDPUU LÄBIKÄIMISE FUNKTSIOON
+//=======================================================
+void TreeTraversal(Node* pTree) { //Sisendiks viit puu tipule
+	Stack* pStack = 0; //Stack esialgu tühi
+	Node* p1 = pTree, * p2; //p1 pointer esialgu viitab puu tipule
 	Object2* pOb;
 	int count = 0;
-	pOb = (Object2*)p1->pObject;
+	pOb = (Object2*)p1->pObject; //Viit juurtipu objektile
+	if (!pTree) { //Kui puu tipp puudub, pole midagi väljastada
+		return;
+	}
 	printf("\nPuu tipu kood: %lu\n", pOb->Code);
 	printf("\n");
 	printf("Objekti kood    Objekti ID\n");
 	printf("===============================\n");
 	do {
-		while (p1)
+		while (p1) //Kuni p1 pointer != NULL
 		{
-			pStack = push(pStack, p1);
-			p1 = p1->pLeft;
+			pStack = push(pStack, p1); //Lisan objekti stacki
+			p1 = p1->pLeft; //Liigutan viida edasi vasakule
 			
 		}
-		pStack = pop(pStack, (void**)&p2);
-		pOb = (Object2*)p2->pObject;
-		count++;
-		printf("%d) %lu        %s \n",count, pOb->Code, pOb->pID);
-		p1 = p2->pRight;
+		pStack = pop(pStack, (void**)&p2); //Eemalda objekt stackist
+		pOb = (Object2*)p2->pObject; //Viit popitud objektile
+		count++; //Loetle popitud tippude arv
+		printf("%d) %lu        %s \n",count, pOb->Code, pOb->pID); //Väljasta popitud element järjekorras vasak-juur-parem
+		p1 = p2->pRight; 
 
 	} while (!(!pStack && !p1));
 
 }
-
-void printTree(Node* pTree, int space) {
-	if (pTree == NULL)
-		return;
-	space += 10;
-	printTree(pTree->pRight, space);
-	for (int i = 10; i < space; i++)
-		printf("\t");
-	printf("%d\n", (int)pTree);
-	//cout << root->data << "\n";
-	printTree(pTree->pLeft, space);
-}
-
-Node* DeleteTreeNode(Node* pTree, unsigned long int Code) {
-	Node* pNewTree, * pNode, * NodeBuf = 0;
-	Object2* pOb;
+//=======================================================
+//KAHENDPUU KIRJE EEMALDAMISE FUNKTSIOON
+//=======================================================
+Node* DeleteTreeNode(Node* pTree, unsigned long int Code) { //Sisendparameetrid viit puu juurele ja sisestatud objektikoodile 
+	Node* pNewTree, * pNode, * NodeBuf = 0; //Node tüüpi pointer uuele juurele, juurele ja eelmisele objektile (buffer)
+	Object2* pOb; //Objekt2 tüüpi pointer
 	pNode = pTree;
 	int LastMoveRight;
-	for (;;) {
-		pOb = (Object2*)pNode->pObject;
-		if (pOb->Code == Code)
+	for (;;) { //Loop kuni midagi returnitakse
+		pOb = (Object2*)pNode->pObject; //Viit juurtipu objektile
+		if (pOb->Code == Code) //Kui leitakse kood
 		{
-			if (NodeBuf == NULL)
+			if (NodeBuf == NULL) //Kui viit eelmisele tipule endiselt NULL (siis tegu tipuga)
 			{
-				NodeBuf = pNode;
-				pNode = pNode->pRight;
-				while (pNode->pLeft != 0)
+				NodeBuf = pNode; //Bufferviit viitab juurele
+				pNode = pNode->pRight; //Juurtipu pointer liigub paremale tütrele
+				while (pNode->pLeft != 0) //Otsin välja parempoolse haru kõige vasakpoolsema võtme 
 				{
-					pNode = pNode->pLeft;
+					pNode = pNode->pLeft; //Liigutan viida vasakule lõppu
 				}
-				pNode->pLeft = NodeBuf->pLeft;
-				pNewTree = NodeBuf->pRight;
-				return pNewTree;
+				/*Parema haru miinimum on aga suurem igast
+				vasaku haru võtmest. Seega kui teha vasaku
+				haru juur parema haru miinimumi vasakuks
+				tütreks, saame täiesti korrektse uue puu.  */
+				pNode->pLeft = NodeBuf->pLeft; //Teen vasaku haru tütre parema haru miinimumi vasakuks tütreks
+				pNewTree = NodeBuf->pRight; //Uus juurtipp on algse juure parem tütar
+				return pNewTree; //Väljasta uue kahendpuu tipp
 			}
-			if (pNode->pLeft != 0 && pNode->pRight != 0 && NodeBuf)
+			if (pNode->pLeft != 0 && pNode->pRight != 0 && NodeBuf) //Kui kirjel on vasak ja parem tütar aga tegu ei ole juurtipuga
 			{
-				if (LastMoveRight == 1)
+				if (LastMoveRight == 1) //Kui eemaldada paremalt
 				{
-					NodeBuf->pRight = pNode->pRight;
-					NodeBuf = pNode;
-					pNode = pNode->pRight;
-					while (pNode->pLeft != 0)
+					NodeBuf->pRight = pNode->pRight; //Eelmise pointeri parem tütar viitab kustutatud node paremale tütrele
+					NodeBuf = pNode; //Bufferviit viitab kustutatud node viidale
+					pNode = pNode->pRight; //liigutan pointeri paremale tütrele
+					while (pNode->pLeft != 0) //Otsin välja parempoolse haru kõige vasakpoolsema võtme 
+					{
+						pNode = pNode->pLeft;  //Liigutan viida vasakule lõppu
+					}
+					pNode->pLeft = NodeBuf->pLeft; //Teen vasaku haru tütre parema haru miinimumi vasakuks tütreks
+					return pTree; //Väljastan uue puu säilinud tipuviida
+				}
+				if (LastMoveRight == 0) //Kui eemaldada vasakult
+				{
+					NodeBuf->pLeft = pNode->pRight; //Bufferviida vasak tütar = kustutatud viida parem tütar
+					NodeBuf = pNode; //bufferviit osutab kustutatud nodele
+					pNode = pNode->pRight;//liigutan pointeri paremale tütrele
+					while (pNode->pLeft != 0)  //Otsin välja parempoolse haru kõige vasakpoolsema võtme 
 					{
 						pNode = pNode->pLeft;
 					}
-					pNode->pLeft = NodeBuf->pLeft;
-					return pTree;
-				}
-				if (LastMoveRight == 0)
-				{
-					NodeBuf->pLeft = pNode->pRight;
-					NodeBuf = pNode;
-					pNode = pNode->pRight;
-					while (pNode->pLeft != 0)
-					{
-						pNode = pNode->pLeft;
-					}
-					pNode->pLeft = NodeBuf->pLeft;
-					return pTree;
+					pNode->pLeft = NodeBuf->pLeft; //Teen vasaku haru tütre parema haru miinimumi vasakuks tütreks
+					return pTree; //Väljastan uue puu säilinud tipuviida
 				}
 			}
-			if (pNode->pLeft == 0 && pNode->pRight == 0 && LastMoveRight == 1)
+			if (pNode->pLeft == 0 && pNode->pRight == 0 && LastMoveRight == 1) //Kui üksik parem leht
 			{
-				NodeBuf->pRight = 0;
+				NodeBuf->pRight = 0; //Nullin parema lehe objekti
 				return pTree;
 			}
-			if (pNode->pLeft == 0 && pNode->pRight == 0 && LastMoveRight == 0)
+			if (pNode->pLeft == 0 && pNode->pRight == 0 && LastMoveRight == 0) //Kui üksik vasak leht
 			{
-				NodeBuf->pLeft = 0;
+				NodeBuf->pLeft = 0; //Nullin vasaku lehe objekti
 				return pTree;
 			}
-			if (pNode->pLeft == 0 && LastMoveRight == 0)
+			if (pNode->pLeft == 0 && LastMoveRight == 0) //Kui vasakut tütart ei ole ja siduda vasakpoolse nodega
 			{
-				NodeBuf->pLeft = pNode->pRight;
+				NodeBuf->pLeft = pNode->pRight; //Bufferviida vasak tütar = kustutatud node parem tütar
 				return pTree;
 			}
-			if (pNode->pLeft == 0 && LastMoveRight == 1)
+			if (pNode->pLeft == 0 && LastMoveRight == 1) //Kui vasakut tütart ei ole ja siduda parempoolse nodega
 			{
-				NodeBuf->pRight = pNode->pRight;
+				NodeBuf->pRight = pNode->pRight; //Bufferfviida uus parem tütar = kustutatud node parem tütar
 				return pTree;
 			}
-			if (pNode->pRight == 0 && LastMoveRight == 1)
+			if (pNode->pRight == 0 && LastMoveRight == 1) // Kui paremat tütart ei ole ja siduda parempoolse nodega
 			{
-				NodeBuf->pRight = pNode->pLeft;
+				NodeBuf->pRight = pNode->pLeft; //Bufferviida parem tütar viitab kustutatud viida vasakule tütrele
 				return pTree;
 			}
-			if (pNode->pRight == 0 && LastMoveRight == 0)
+			if (pNode->pRight == 0 && LastMoveRight == 0) // Kui paremat tütart ei ole ja siduda vasakpoolse nodega
 			{
-				NodeBuf->pLeft = pNode->pLeft;
+				NodeBuf->pLeft = pNode->pLeft; //Bufferviit vasak tütar = kustutatud node vasak tütar
 				return pTree;
 			}
 
 		}
-		if (pNode->pLeft == NULL && pNode->pRight == NULL && pOb->Code != Code)
+		if (pNode->pLeft == NULL && pNode->pRight == NULL && pOb->Code != Code) //Kui puu on läbi käidud ja koodi ei leitud
 		{
 			printf("Sellise koodiga tippu ei ole puus, eemaldamist ei toimunud\n");
 			return 0;
 		}
-		if ((pNode->pLeft == NULL && pOb->Code > Code) || (pNode->pRight == NULL && pOb->Code < Code))
+		/*Kui kood peaks minema vasakpoolsemale harule aga rohkem vasakuid tütreid ei ole (või paremale ja paremat ei ole)*/
+		if ((pNode->pLeft == NULL && pOb->Code > Code) || (pNode->pRight == NULL && pOb->Code < Code)) 
 		{
 			printf("Sellise koodiga tippu ei ole puus, eemaldamist ei toimunud\n");
 			return 0;
 		}
-		if (pOb->Code > Code)
+		if (pOb->Code > Code) //Kui sisestatud kood on väiksem kui kirjetipp, liigu järjest vasakpoolsele harule
 		{
-			NodeBuf = pNode;
-			pNode = pNode->pLeft;
-			LastMoveRight = 0;
+			NodeBuf = pNode;//Bufferviit liigub eelmise tipu peale
+			pNode = pNode->pLeft;//Juurtipu viit liigub vasakule tütrele
+			LastMoveRight = 0; //Uus aadress vasakule poole
 		}
-		if (pOb->Code < Code)
+		if (pOb->Code < Code) //Kui sisestatud kood on suurem kui juurtipp, liigu parempoolsele harule
 		{
-			NodeBuf = pNode;
-			pNode = pNode->pRight;
-			LastMoveRight = 1;
+			NodeBuf = pNode; //Bufferviit liigub eelmise tipu peale
+			pNode = pNode->pRight; //Juurtipu viit liigub paremale tütrele
+			LastMoveRight = 1; //Uus aadress paremale poole
 		}
 	}
 
 }
 
-
-//Node* CreateBinaryTree(HeaderD* pStruct7){ //pStruct7 = root
-//	
-//	Object2* ob2 = (Object2*)pStruct7->pObject;
-//
-//	Node* pNew = (Node*)malloc(sizeof(Node)); //Uus tipp
-//
-//	pNew->pObject = ob2;
-//	pNew->pLeft = NULL;
-//	pNew->pRight = NULL;
-//
-//	if (!pStruct7)
-//		return pNew;
-//
-//	Node* p = pStruct7;
-//
-//	HeaderD* pHeader; //HeaderD tüüpi viit, saab sisendsee iks pStruct7
-//
-//	Object2* ob2 = (Object2*)pStruct7->pObject; //Objekt2 tüüpi viit ob2
-//
-//	Time1* time1 = ob2->pTime1; //Time1 tüüpi viit time1
-//
-//	Node* temp, * par;
-//	
-//	Node* pNew = pStruct7;
-//
-//	p->pObject = ob2;
-//	
-//	p->pLeft = NULL;
-//	p->pRight = NULL;
-//
-//	//p=root;
-//	par = NULL;
-//	
-//
-//	int i = 1;
-//
-//	//Kammib lõpuni läbi pStructi Headerid
-//	for (pHeader = pStruct7; pHeader != NULL; pHeader = pHeader->pNext) {
-//		//Kammib läbi kõik struktuuris olevad objektide loendid
-//		for (ob2 = (Object2*)pHeader->pObject; ob2 != NULL; ob2 = ob2->pNext, i++) {
-//			par = p;
-//			if(ob2->Code < pHeader->pObject->Code)
-//		}
-//	}
-//} // CreateBinaryTree lõpp
-////
-//void TreeTraversal(Node* pTree){
+//void printTree(Node* pTree, int space) {
 //	if (pTree == NULL)
-//	{
 //		return;
-//	}
+//	space += 10;
+//	printTree(pTree->pRight, space);
+//	for (int i = 10; i < space; i++)
+//		printf("\t");
+//	printf("%d\n", (int)pTree);
+//	//cout << root->data << "\n";
+//	printTree(pTree->pLeft, space);
 //}
-//
-//Node* DeleteTreeNode(Node* pTree, unsigned long int Code){}
