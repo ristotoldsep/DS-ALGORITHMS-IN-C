@@ -650,12 +650,12 @@ void TreeTraversal(Node* pTree) { //Sisendiks viit puu tipule
 //=======================================================
 Node* DeleteTreeNode(Node* pTree, unsigned long int Code) { //Sisendparameetrid viit puu juurele ja sisestatud objektikoodile 
 	Node* pNewTree, * pNode, * NodeBuf = 0; //Node tüüpi pointer uuele juurele, juurele ja eelmisele objektile (buffer)
-	Object2* pOb; //Objekt2 tüüpi pointer
+	Object2* pObj; //Objekt2 tüüpi pointer
 	pNode = pTree;
 	int LastMoveRight;
 	for (;;) { //Loop kuni midagi returnitakse
-		pOb = (Object2*)pNode->pObject; //Viit juurtipu objektile
-		if (pOb->Code == Code) //Kui leitakse kood
+		pObj = (Object2*)pNode->pObject; //Viit juurtipu objektile
+		if (pObj->Code == Code) //Kui leitakse kood
 		{
 			if (NodeBuf == NULL) //Kui viit eelmisele tipule endiselt NULL (siis tegu tipuga)
 			{
@@ -732,24 +732,24 @@ Node* DeleteTreeNode(Node* pTree, unsigned long int Code) { //Sisendparameetrid 
 			}
 
 		}
-		if (pNode->pLeft == NULL && pNode->pRight == NULL && pOb->Code != Code) //Kui puu on läbi käidud ja koodi ei leitud
+		if (pNode->pLeft == NULL && pNode->pRight == NULL && pObj->Code != Code) //Kui puu on läbi käidud ja koodi ei leitud
 		{
 			printf("Sellise koodiga tippu ei ole puus, eemaldamist ei toimunud\n");
 			return 0;
 		}
 		/*Kui kood peaks minema vasakpoolsemale harule aga rohkem vasakuid tütreid ei ole (või paremale ja paremat ei ole)*/
-		if ((pNode->pLeft == NULL && pOb->Code > Code) || (pNode->pRight == NULL && pOb->Code < Code)) 
+		if ((pNode->pLeft == NULL && pObj->Code > Code) || (pNode->pRight == NULL && pObj->Code < Code)) 
 		{
 			printf("Sellise koodiga tippu ei ole puus, eemaldamist ei toimunud\n");
 			return 0;
 		}
-		if (pOb->Code > Code) //Kui sisestatud kood on väiksem kui kirjetipp, liigu järjest vasakpoolsele harule
+		if (pObj->Code > Code) //Kui sisestatud kood on väiksem kui kirjetipp, liigu järjest vasakpoolsele harule
 		{
 			NodeBuf = pNode;//Bufferviit liigub eelmise tipu peale
 			pNode = pNode->pLeft;//Juurtipu viit liigub vasakule tütrele
 			LastMoveRight = 0; //Uus aadress vasakule poole
 		}
-		if (pOb->Code < Code) //Kui sisestatud kood on suurem kui juurtipp, liigu parempoolsele harule
+		if (pObj->Code < Code) //Kui sisestatud kood on suurem kui juurtipp, liigu parempoolsele harule
 		{
 			NodeBuf = pNode; //Bufferviit liigub eelmise tipu peale
 			pNode = pNode->pRight; //Juurtipu viit liigub paremale tütrele
